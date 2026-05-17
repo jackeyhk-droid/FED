@@ -1,0 +1,1051 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>美聯儲主席就任市場表現分析 | Fed Chair Inauguration Market Analysis</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@300;400;500&family=Noto+Sans+TC:wght@300;400;500;600;700&display=swap');
+
+  :root {
+    --bg-primary: #0a0a0f;
+    --bg-secondary: #12121a;
+    --bg-tertiary: #1a1a26;
+    --bg-card: #14141e;
+    --bg-card-hover: #1a1a28;
+    --border-primary: rgba(255,255,255,0.06);
+    --border-accent: rgba(255,255,255,0.12);
+    --text-primary: #e8e6e1;
+    --text-secondary: #8a8a96;
+    --text-tertiary: #737387;
+    --accent-green: #34d399;
+    --accent-green-dim: rgba(52,211,153,0.12);
+    --accent-red: #f87171;
+    --accent-red-dim: rgba(248,113,113,0.12);
+    --accent-blue: #60a5fa;
+    --accent-blue-dim: rgba(96,165,250,0.12);
+    --accent-purple: #a78bfa;
+    --accent-purple-dim: rgba(167,139,250,0.12);
+    --accent-amber: #fbbf24;
+    --accent-amber-dim: rgba(251,191,36,0.12);
+    --accent-indigo: #818cf8;
+    --font-sans: 'DM Sans', 'Noto Sans TC', sans-serif;
+    --font-mono: 'JetBrains Mono', monospace;
+    --font-zh: 'Noto Sans TC', sans-serif;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: var(--font-sans);
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    line-height: 1.6;
+    min-height: 100vh;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .dashboard { max-width: 1440px; margin: 0 auto; padding: 36px 44px; }
+
+  /* Header */
+  .header { margin-bottom: 40px; position: relative; }
+  .header::after {
+    content: ''; position: absolute; bottom: -20px; left: 0; right: 0; height: 1px;
+    background: linear-gradient(90deg, var(--accent-blue) 0%, transparent 60%); opacity: 0.3;
+  }
+  .header-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 24px; }
+  .header-badge {
+    font-family: var(--font-mono); font-size: 12px; color: var(--accent-blue);
+    letter-spacing: 2px; text-transform: uppercase; margin-bottom: 10px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .header-badge::before {
+    content: ''; width: 6px; height: 6px;
+    background: var(--accent-blue); border-radius: 50%;
+    box-shadow: 0 0 8px var(--accent-blue);
+  }
+  .header h1 {
+    font-family: var(--font-zh); font-size: 32px; font-weight: 700;
+    letter-spacing: -0.5px; color: var(--text-primary); margin-bottom: 6px;
+  }
+  .header-sub { font-size: 15px; color: var(--text-secondary); font-weight: 400; }
+  .header-meta { text-align: right; font-family: var(--font-mono); font-size: 12px; color: var(--text-tertiary); line-height: 1.8; flex-shrink: 0; }
+  .header-meta span { color: var(--text-secondary); }
+
+  /* Metric Cards Row */
+  .metrics-row { display: grid; grid-template-columns: repeat(5, 1fr); gap: 14px; margin-bottom: 32px; }
+  .metric-card {
+    background: var(--bg-card); border: 1px solid var(--border-primary); border-radius: 10px;
+    padding: 18px 20px; position: relative; overflow: hidden;
+    transition: border-color 0.2s, transform 0.2s ease, box-shadow 0.2s ease;
+  }
+  .metric-card:hover {
+    border-color: var(--border-accent); transform: translateY(-1px);
+    box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+  }
+  .metric-card .label {
+    font-size: 11px; color: var(--text-tertiary); font-weight: 500;
+    text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px;
+    font-family: var(--font-mono);
+  }
+  .metric-card .value { font-family: var(--font-mono); font-size: 26px; font-weight: 600; line-height: 1.1; }
+  .metric-card .sub { font-size: 11px; color: var(--text-tertiary); margin-top: 6px; font-family: var(--font-mono); }
+  .metric-card.green .value { color: var(--accent-green); }
+  .metric-card.red .value { color: var(--accent-red); }
+  .metric-card.blue .value { color: var(--accent-blue); }
+  .metric-card.amber .value { color: var(--accent-amber); }
+  .metric-card.neutral .value { color: var(--text-primary); }
+  .metric-card.purple .value { color: var(--accent-purple); }
+  .metric-card .glow {
+    position: absolute; top: -20px; right: -20px; width: 80px; height: 80px;
+    border-radius: 50%; opacity: 0.07; pointer-events: none;
+  }
+  .metric-card.green .glow { background: var(--accent-green); }
+  .metric-card.red .glow { background: var(--accent-red); }
+  .metric-card.blue .glow { background: var(--accent-blue); }
+  .metric-card.amber .glow { background: var(--accent-amber); }
+  .metric-card.purple .glow { background: var(--accent-purple); }
+
+  /* Section */
+  .section { margin-bottom: 32px; }
+  .section-header { display: flex; align-items: center; gap: 10px; margin-bottom: 18px; }
+  .section-header h2 { font-family: var(--font-zh); font-size: 18px; font-weight: 600; color: var(--text-primary); }
+  .section-header .line { flex: 1; height: 1px; background: var(--border-primary); }
+  .section-header .tag { font-family: var(--font-mono); font-size: 11px; color: var(--text-tertiary); letter-spacing: 1px; text-transform: uppercase; }
+
+  /* Warsh Tracker */
+  .tracker {
+    background: var(--bg-card); border: 1px solid var(--border-primary); border-radius: 12px;
+    padding: 24px 26px; margin-bottom: 32px;
+  }
+  .tracker-title {
+    font-family: var(--font-mono); font-size: 12px; letter-spacing: 1.5px;
+    color: var(--accent-blue); text-transform: uppercase; margin-bottom: 18px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .tracker-title::before {
+    content: ''; width: 8px; height: 8px;
+    background: var(--accent-blue); border-radius: 50%;
+    animation: pulse 2s ease-in-out infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; box-shadow: 0 0 4px var(--accent-blue); }
+    50% { opacity: 0.5; box-shadow: 0 0 12px var(--accent-blue); }
+  }
+  .tracker-grid {
+    display: grid; grid-template-columns: repeat(5, 1fr); gap: 1px;
+    background: var(--border-primary); border-radius: 8px; overflow: hidden;
+  }
+  .tracker-cell { background: var(--bg-secondary); padding: 16px 18px; text-align: center; }
+  .tracker-cell .tc-label { font-size: 11px; color: var(--text-tertiary); font-family: var(--font-mono); margin-bottom: 6px; letter-spacing: 0.5px; }
+  .tracker-cell .tc-value { font-family: var(--font-mono); font-size: 20px; font-weight: 600; color: var(--text-primary); }
+  .tracker-cell .tc-sub { font-size: 11px; margin-top: 4px; font-family: var(--font-mono); }
+  .tracker-cell .tc-sub.green { color: var(--accent-green); }
+  .tracker-cell .tc-sub.red { color: var(--accent-red); }
+  .tracker-cell .tc-sub.blue { color: var(--accent-blue); }
+  .tracker-cell .tc-sub.muted { color: var(--text-tertiary); }
+  .tracker-cell.active { background: rgba(96,165,250,0.06); }
+  .progress-section { margin-top: 18px; }
+  .progress-labels { display: flex; justify-content: space-between; font-family: var(--font-mono); font-size: 11px; color: var(--text-tertiary); margin-bottom: 6px; }
+  .progress-bar { height: 4px; background: var(--bg-tertiary); border-radius: 2px; position: relative; overflow: visible; }
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent-blue), var(--accent-purple), var(--accent-amber));
+    border-radius: 2px; transition: width 0.5s ease;
+  }
+  .progress-markers { position: absolute; top: 0; left: 0; right: 0; bottom: 0; }
+  .progress-marker { position: absolute; top: -5px; width: 9px; height: 14px; cursor: pointer; z-index: 3; }
+  .progress-marker::before {
+    content: ''; position: absolute; left: 4px; top: 2px;
+    width: 1px; height: 10px; background: var(--text-tertiary); opacity: 0.5;
+  }
+  .progress-marker.m1m { left: 8.33%; }   /* 30/365 */
+  .progress-marker.m3m { left: 24.93%; }  /* 91/365 */
+  .progress-marker.m6m { left: 49.86%; }  /* 182/365 */
+  .progress-marker.m1y { left: 100%; }
+  .progress-marker .pm-tip {
+    display: none; position: absolute; bottom: calc(100% + 8px); left: 50%;
+    transform: translateX(-50%); background: var(--bg-tertiary);
+    border: 1px solid var(--border-accent); color: var(--text-secondary);
+    font-family: var(--font-mono); font-size: 10px; padding: 3px 8px;
+    border-radius: 4px; white-space: nowrap; z-index: 20; pointer-events: none;
+  }
+  .progress-marker:hover .pm-tip { display: block; }
+  .progress-label {
+    position: absolute; top: -24px; transform: translateX(-50%);
+    font-family: var(--font-mono); font-size: 10px; color: var(--accent-amber);
+    white-space: nowrap; background: var(--bg-card); padding: 2px 8px;
+    border-radius: 4px; border: 1px solid rgba(251,191,36,0.3); z-index: 2;
+  }
+
+  /* Tabs */
+  .tabs { display: flex; gap: 4px; margin-bottom: 18px; background: var(--bg-secondary); padding: 4px; border-radius: 10px; width: fit-content; border: 1px solid var(--border-primary); flex-wrap: wrap; }
+  .tab {
+    padding: 8px 18px; background: transparent; border: none; color: var(--text-secondary);
+    font-family: var(--font-sans); font-size: 13px; font-weight: 500; cursor: pointer;
+    border-radius: 7px; transition: all 0.2s; letter-spacing: 0.3px;
+  }
+  .tab:hover { color: var(--text-primary); }
+  .tab.active { background: var(--bg-card); color: var(--accent-blue); box-shadow: 0 1px 3px rgba(0,0,0,0.2); }
+  .tab .ticker { font-family: var(--font-mono); margin-left: 6px; opacity: 0.7; font-size: 11px; }
+  .metric-explainer {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-primary);
+    border-radius: 8px;
+    padding: 10px 14px;
+    margin-bottom: 18px;
+    font-size: 12.5px;
+    color: var(--text-secondary);
+    font-family: var(--font-zh);
+    border-left: 2px solid var(--accent-blue);
+  }
+  .metric-explainer strong { color: var(--text-primary); font-weight: 600; }
+  .metric-explainer .me-def { color: var(--text-tertiary); }
+
+  /* Chart Container */
+  .chart-container {
+    background: var(--bg-card); border: 1px solid var(--border-primary); border-radius: 12px;
+    padding: 26px;
+  }
+  .chart-legend { display: flex; gap: 24px; margin-bottom: 18px; font-size: 13px; flex-wrap: wrap; }
+  .chart-legend .item { display: flex; align-items: center; gap: 6px; color: var(--text-secondary); }
+  .chart-legend .dot { width: 10px; height: 10px; border-radius: 2px; }
+  .chart-wrap { position: relative; width: 100%; height: 440px; overflow-x: auto; overflow-y: hidden; -webkit-overflow-scrolling: touch; }
+  .chart-wrap canvas { min-width: 900px; }
+  .chart-meta { display: flex; justify-content: space-between; align-items: center; padding-top: 14px; margin-top: 18px; border-top: 1px solid var(--border-primary); font-family: var(--font-mono); font-size: 11px; color: var(--text-tertiary); }
+  .chart-meta .stats-pill { background: var(--bg-secondary); padding: 4px 10px; border-radius: 5px; }
+  .chart-meta .stats-pill .v { color: var(--text-secondary); }
+
+  /* Data Table */
+  .table-container { background: var(--bg-card); border: 1px solid var(--border-primary); border-radius: 12px; overflow: hidden; }
+  .table-scroll { overflow-x: auto; overflow-y: auto; max-height: 620px; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; min-width: 1280px; }
+  thead { position: sticky; top: 0; z-index: 10; }
+  thead th {
+    background: var(--bg-tertiary); padding: 11px 12px; text-align: center; font-weight: 600;
+    color: var(--text-secondary); font-size: 12px; border-bottom: 1px solid var(--border-accent);
+    white-space: nowrap; font-family: var(--font-zh);
+  }
+  thead th.sub-header { font-weight: 400; font-size: 11px; color: var(--text-tertiary); background: #161622; font-family: var(--font-mono); letter-spacing: 0.5px; }
+  thead th.sortable { cursor: pointer; user-select: none; transition: color 0.15s; }
+  thead th.sortable:hover { color: var(--accent-blue); }
+  thead th.sortable:focus-visible { outline: 2px solid var(--accent-blue); outline-offset: -2px; color: var(--accent-blue); }
+  thead th.sortable .sort-icon { display: inline-block; margin-left: 4px; font-size: 10px; opacity: 0.4; transition: opacity 0.15s; }
+  thead th.sortable.active .sort-icon { opacity: 1; color: var(--accent-blue); }
+  thead th.left { text-align: left; }
+  tbody tr { border-bottom: 1px solid var(--border-primary); transition: background 0.15s; }
+  tbody tr:hover { background: var(--bg-card-hover); }
+  tbody tr.highlight { background: rgba(96,165,250,0.05); border-left: 2px solid var(--accent-blue); }
+  tbody tr.highlight:hover { background: rgba(96,165,250,0.1); }
+  tbody tr.chart-hover { background: rgba(167,139,250,0.08); }
+  tbody tr.na td.pct { color: var(--text-tertiary); }
+  td { padding: 11px 12px; white-space: nowrap; }
+  thead th:first-child, tbody td:first-child {
+    position: sticky; left: 0; z-index: 5;
+    background: var(--bg-card); border-right: 1px solid var(--border-primary);
+    box-shadow: 4px 0 8px -2px rgba(0,0,0,0.4); clip-path: inset(0 -10px 0 0);
+  }
+  thead th:first-child { z-index: 12; background: var(--bg-tertiary); box-shadow: 4px 0 8px -2px rgba(0,0,0,0.4); clip-path: inset(0 -10px 0 0); }
+  tbody tr:hover td:first-child { background: var(--bg-card-hover); }
+  tbody tr.highlight td:first-child { background: rgba(96,165,250,0.05); }
+  tbody tr.chart-hover td:first-child { background: rgba(167,139,250,0.08); }
+  td.chair-name { font-family: var(--font-zh); font-weight: 500; font-size: 12.5px; color: var(--text-primary); text-align: left; min-width: 200px; }
+  td.chair-name .meta { display: block; font-size: 10px; color: var(--text-tertiary); font-family: var(--font-mono); margin-top: 2px; letter-spacing: 0.3px; font-weight: 400; }
+  td.chair-name .party { display: inline-block; margin-left: 6px; padding: 1px 5px; border-radius: 3px; font-size: 9px; font-family: var(--font-mono); vertical-align: middle; }
+  td.chair-name .party.D { background: rgba(96,165,250,0.15); color: var(--accent-blue); }
+  td.chair-name .party.R { background: rgba(248,113,113,0.15); color: var(--accent-red); }
+  td.date { font-family: var(--font-mono); font-size: 11px; color: var(--text-tertiary); text-align: center; }
+  td.price { font-family: var(--font-mono); font-size: 12px; color: var(--text-secondary); text-align: right; }
+  td.pct { font-family: var(--font-mono); font-size: 12px; font-weight: 500; text-align: right; }
+  td.pct.up { color: var(--accent-green); }
+  td.pct.down { color: var(--accent-red); }
+  td.pct.na { color: var(--text-tertiary); }
+  td.na-cell { color: var(--text-tertiary); text-align: center; font-style: italic; }
+  .table-footer { padding: 12px 18px; font-size: 11px; color: var(--text-tertiary); border-top: 1px solid var(--border-primary); font-family: var(--font-mono); }
+  /* Column group banding */
+  td:nth-child(5), td:nth-child(6), td:nth-child(7),
+  th:nth-child(5), th:nth-child(6), th:nth-child(7) { background-color: rgba(255,255,255,0.015); }
+  td:nth-child(11), td:nth-child(12), td:nth-child(13),
+  th:nth-child(11), th:nth-child(12), th:nth-child(13) { background-color: rgba(255,255,255,0.015); }
+  thead th:first-child { background: var(--bg-tertiary) !important; }
+  tbody td:first-child { background: var(--bg-card) !important; }
+  tbody tr:hover td:first-child { background: var(--bg-card-hover) !important; }
+  tbody tr.highlight td:first-child { background: rgba(96,165,250,0.05) !important; }
+  tbody tr.chart-hover td:first-child { background: rgba(167,139,250,0.08) !important; }
+  tbody tr:hover td:nth-child(5), tbody tr:hover td:nth-child(6), tbody tr:hover td:nth-child(7),
+  tbody tr:hover td:nth-child(11), tbody tr:hover td:nth-child(12), tbody tr:hover td:nth-child(13) { background-color: rgba(255,255,255,0.035); }
+  /* Asterisk tooltip */
+  .tip-wrap { position: relative; }
+  .tip-wrap .tip {
+    display: none; position: absolute; bottom: calc(100% + 6px); left: 50%;
+    transform: translateX(-50%); background: var(--bg-tertiary);
+    border: 1px solid var(--border-accent); color: var(--text-secondary);
+    font-family: var(--font-zh); font-size: 11px; padding: 5px 10px;
+    border-radius: 6px; white-space: nowrap; z-index: 20; pointer-events: none;
+  }
+  .tip-wrap .tip::after {
+    content: ''; position: absolute; top: 100%; left: 50%;
+    transform: translateX(-50%); border: 5px solid transparent;
+    border-top-color: var(--border-accent);
+  }
+  .tip-wrap:hover .tip { display: block; }
+
+  /* Takeaway Cards */
+  .takeaway-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .takeaway-card {
+    background: var(--bg-card); border: 1px solid var(--border-primary); border-radius: 12px;
+    padding: 24px 26px; position: relative; overflow: hidden;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s;
+  }
+  .takeaway-card:hover {
+    transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.2); border-color: var(--border-accent);
+  }
+  .takeaway-card.full { grid-column: 1 / -1; }
+  .takeaway-card .card-accent { position: absolute; top: 0; left: 0; right: 0; height: 2px; }
+  .takeaway-card.t-1 .card-accent { background: linear-gradient(90deg, #60a5fa, transparent); }
+  .takeaway-card.t-2 .card-accent { background: linear-gradient(90deg, #818cf8, transparent); }
+  .takeaway-card.t-3 .card-accent { background: linear-gradient(90deg, #a78bfa, transparent); }
+  .takeaway-card.t-4 .card-accent { background: linear-gradient(90deg, #7c8cf5, transparent); }
+  .takeaway-card.t-5 .card-accent { background: linear-gradient(90deg, #6366f1, transparent); }
+  .takeaway-num { font-family: var(--font-mono); font-size: 11px; color: var(--text-tertiary); letter-spacing: 1px; margin-bottom: 10px; }
+  .takeaway-title { font-family: var(--font-zh); font-size: 16px; font-weight: 600; color: var(--text-primary); margin-bottom: 12px; line-height: 1.5; }
+  .takeaway-body { font-family: var(--font-zh); font-size: 14px; color: var(--text-secondary); line-height: 1.85; }
+  .takeaway-body strong { color: var(--text-primary); font-weight: 600; }
+  .takeaway-body .g { color: var(--accent-green); font-weight: 500; }
+  .takeaway-body .r { color: var(--accent-red); font-weight: 500; }
+  .takeaway-body .b { color: var(--accent-blue); font-weight: 500; }
+  .takeaway-body .a { color: var(--accent-amber); font-weight: 500; }
+  .takeaway-body .p { color: var(--accent-purple); font-weight: 500; }
+  .takeaway-card.full {
+    background: linear-gradient(135deg, rgba(99,102,241,0.04) 0%, var(--bg-card) 60%);
+    border-color: rgba(99,102,241,0.2); box-shadow: 0 0 24px rgba(99,102,241,0.06);
+  }
+  .takeaway-card.full:hover { border-color: rgba(99,102,241,0.35); box-shadow: 0 8px 32px rgba(99,102,241,0.12); }
+
+  /* Scenario row */
+  .scenario-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 14px; }
+  .scenario { background: var(--bg-secondary); border: 1px solid var(--border-primary); border-radius: 8px; padding: 14px 16px; }
+  .scenario .sc-label { font-family: var(--font-mono); font-size: 10px; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
+  .scenario .sc-value { font-family: var(--font-mono); font-size: 18px; font-weight: 600; }
+  .scenario .sc-sub { font-family: var(--font-mono); font-size: 10px; color: var(--text-tertiary); margin-top: 4px; }
+  .scenario.bull { border-left: 2px solid var(--accent-green); }
+  .scenario.bull .sc-value { color: var(--accent-green); }
+  .scenario.base { border-left: 2px solid var(--accent-blue); }
+  .scenario.base .sc-value { color: var(--accent-blue); }
+  .scenario.bear { border-left: 2px solid var(--accent-red); }
+  .scenario.bear .sc-value { color: var(--accent-red); }
+
+  /* Footer */
+  .footer { margin-top: 40px; padding-top: 18px; border-top: 1px solid var(--border-primary); display: flex; justify-content: space-between; align-items: center; }
+  .footer-left { font-family: var(--font-mono); font-size: 11px; color: var(--text-tertiary); letter-spacing: 0.5px; }
+  .footer-right { font-family: var(--font-zh); font-size: 11px; color: var(--text-tertiary); }
+
+  @media (max-width: 1200px) {
+    .dashboard { padding: 24px 24px; }
+    .metrics-row { grid-template-columns: repeat(3, 1fr); }
+    .tracker-grid { grid-template-columns: repeat(3, 1fr); }
+    .takeaway-grid { grid-template-columns: 1fr; }
+    .takeaway-card.full { grid-column: 1; }
+    .scenario-row { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 768px) {
+    .dashboard { padding: 16px 16px; }
+    .header-top { flex-direction: column; }
+    .header-meta { text-align: left; }
+    .metrics-row { grid-template-columns: repeat(2, 1fr); }
+    .tracker-grid { grid-template-columns: repeat(2, 1fr); }
+    .chart-wrap { height: 320px; }
+    .header h1 { font-size: 24px; }
+    .footer { flex-direction: column; gap: 8px; align-items: flex-start; }
+  }
+  @media (max-width: 480px) {
+    .metrics-row { grid-template-columns: 1fr; }
+    .tracker-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<div class="dashboard">
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="header-top">
+      <div>
+        <div class="header-badge">Macro × Monetary Policy</div>
+        <h1>美聯儲主席就任後市場表現分析</h1>
+        <div class="header-sub">Fed Chair Inauguration → S&amp;P 500 &amp; NASDAQ-100 Forward Returns · 1914–2026 (17 Chairs)</div>
+      </div>
+      <div class="header-meta">
+        <span>Reference Date</span> 17 May 2026<br>
+        <span>Coverage</span> 112 Years · 17 Chairs<br>
+        <span>Data</span> Shiller (pre-1928) · Yahoo Finance (1928+)<br>
+        <span>Indices</span> ^GSPC · ^NDX
+      </div>
+    </div>
+  </div>
+
+  <!-- METRIC CARDS -->
+  <div class="metrics-row">
+    <div class="metric-card green">
+      <div class="glow"></div>
+      <div class="label">Median +1Y SPX</div>
+      <div class="value" id="mc-median">—</div>
+      <div class="sub">歷史中位數 · n=<span id="mc-n">16</span></div>
+    </div>
+    <div class="metric-card red">
+      <div class="glow"></div>
+      <div class="label">Median Max DD</div>
+      <div class="value" id="mc-medd">—</div>
+      <div class="sub">就任前後 6M 內 · n=<span id="mc-ndd">12</span></div>
+    </div>
+    <div class="metric-card green">
+      <div class="glow"></div>
+      <div class="label">Best +1Y</div>
+      <div class="value" id="mc-best">—</div>
+      <div class="sub" id="mc-best-name">—</div>
+    </div>
+    <div class="metric-card red">
+      <div class="glow"></div>
+      <div class="label">Worst DD</div>
+      <div class="value" id="mc-worstdd">—</div>
+      <div class="sub" id="mc-worstdd-name">—</div>
+    </div>
+    <div class="metric-card purple">
+      <div class="glow"></div>
+      <div class="label">Warsh T0 (SPX)</div>
+      <div class="value" id="mc-warsh">—</div>
+      <div class="sub">2026-05-15 · NDX <span id="mc-warsh-ndx">—</span></div>
+    </div>
+  </div>
+
+  <!-- WARSH TRACKER -->
+  <div class="tracker">
+    <div class="tracker-title">Live Tracker · Warsh Era — Day <span id="trkDay">—</span> of 365</div>
+    <div class="tracker-grid">
+      <div class="tracker-cell active">
+        <div class="tc-label">CHAIR</div>
+        <div class="tc-value" style="color: var(--accent-blue)">Warsh</div>
+        <div class="tc-sub muted">17th · Trump appointee</div>
+      </div>
+      <div class="tracker-cell">
+        <div class="tc-label">START DATE</div>
+        <div class="tc-value">May 15</div>
+        <div class="tc-sub muted">2026 · Friday</div>
+      </div>
+      <div class="tracker-cell">
+        <div class="tc-label">SPX T0</div>
+        <div class="tc-value" id="trkSpx">—</div>
+        <div class="tc-sub muted">Powell's last day</div>
+      </div>
+      <div class="tracker-cell">
+        <div class="tc-label">NDX T0</div>
+        <div class="tc-value" id="trkNdx">—</div>
+        <div class="tc-sub muted">Powell's last day</div>
+      </div>
+      <div class="tracker-cell">
+        <div class="tc-label">+1Y MEDIAN TARGET</div>
+        <div class="tc-value" id="trkTarget">—</div>
+        <div class="tc-sub blue">SPX @ median +1Y</div>
+      </div>
+    </div>
+    <div class="progress-section">
+      <div class="progress-labels">
+        <span>T0 · May 15 2026</span>
+        <span>+1Y · May 2027</span>
+      </div>
+      <div class="progress-bar">
+        <div class="progress-fill" id="trkFill" style="width: 0.5%"></div>
+        <div class="progress-label" id="trkLabel" style="left: 0.5%">Day 2</div>
+        <div class="progress-markers">
+          <div class="progress-marker m1m"><span class="pm-tip">+1M · Jun 14</span></div>
+          <div class="progress-marker m3m"><span class="pm-tip">+3M · Aug 14</span></div>
+          <div class="progress-marker m6m"><span class="pm-tip">+6M · Nov 13</span></div>
+          <div class="progress-marker m1y"><span class="pm-tip">+1Y · May 15 2027</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CHART SECTION -->
+  <div class="section">
+    <div class="section-header">
+      <h2>歷代主席就任後表現 · Forward Returns by Chair</h2>
+      <div class="line"></div>
+      <div class="tag">SECTION 01</div>
+    </div>
+    <div class="tabs">
+      <button class="tab active" data-view="spx_ret" data-index="spx">SPX 點對點報酬 <span class="ticker">Returns</span></button>
+      <button class="tab" data-view="spx_dd" data-index="spx">SPX 最大回檔 <span class="ticker">Max DD</span></button>
+      <button class="tab" data-view="ndx_ret" data-index="ndx">NDX 點對點報酬 <span class="ticker">Returns</span></button>
+      <button class="tab" data-view="ndx_dd" data-index="ndx">NDX 最大回檔 <span class="ticker">Max DD</span></button>
+    </div>
+    <div class="metric-explainer" id="metricExplainer">
+      <strong>當前視圖:</strong> <span id="me-current">點對點報酬 (Point-to-Point Returns)</span> ·
+      <span class="me-def" id="me-def">從就任日收盤到 T+N 收盤的單期變動，反映宏觀政策方向。</span>
+    </div>
+    <div class="chart-container">
+      <div class="chart-legend" id="returnLegend">
+        <div class="item"><span class="dot" style="background:#34d399"></span> +1個月 / +1 Month</div>
+        <div class="item"><span class="dot" style="background:#60a5fa"></span> +3個月 / +3 Months</div>
+        <div class="item"><span class="dot" style="background:#a78bfa"></span> +6個月 / +6 Months</div>
+        <div class="item"><span class="dot" style="background:#fbbf24"></span> +1年 / +1 Year</div>
+      </div>
+      <div class="chart-legend" id="ddLegend" style="display: none;">
+        <div class="item"><span class="dot" style="background:#f87171"></span> Max Drawdown · 就任前後 6 個月內最大回檔</div>
+      </div>
+      <div class="chart-wrap">
+        <canvas id="barChart"></canvas>
+      </div>
+      <div class="chart-meta">
+        <div class="stats-pill"><span id="cm-med-label">Median +1Y</span>: <span class="v" id="cm-med">—</span></div>
+        <div class="stats-pill"><span id="cm-mean-label">Mean +1Y</span>: <span class="v" id="cm-mean">—</span></div>
+        <div class="stats-pill"><span id="cm-range-label">Range</span>: <span class="v" id="cm-range">—</span></div>
+        <div class="stats-pill">Observations: <span class="v" id="cm-n">—</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DATA TABLE -->
+  <div class="section">
+    <div class="section-header">
+      <h2>完整數據表 · Full Dataset</h2>
+      <div class="line"></div>
+      <div class="tag">SECTION 02</div>
+    </div>
+    <div class="table-container">
+      <div class="table-scroll">
+        <table>
+          <thead id="tableHead"></thead>
+          <tbody id="dataTable"></tbody>
+        </table>
+      </div>
+      <div class="table-footer" id="tableFooter">
+        預設依時序倒排 (最新主席在最上) · 點欄位標頭可重新排序 · * 月度平均值 (Shiller 1928 前資料)。粗體列為 Warsh 當前任期。
+      </div>
+    </div>
+  </div>
+
+  <!-- TAKEAWAYS -->
+  <div class="section">
+    <div class="section-header">
+      <h2>關鍵洞察 · Key Takeaways</h2>
+      <div class="line"></div>
+      <div class="tag">SECTION 03</div>
+    </div>
+    <div class="takeaway-grid">
+
+      <div class="takeaway-card t-1">
+        <div class="card-accent"></div>
+        <div class="takeaway-num">TAKEAWAY 01 · BASE RATE</div>
+        <div class="takeaway-title">兩個視角，兩個答案</div>
+        <div class="takeaway-body">
+          <strong>點對點報酬 (Point-to-Point):</strong> +1Y SPX 中位數 <span class="g" id="t1-med">—</span>，
+          16 位中 <span class="g" id="t1-pos">—</span> 位為正。長期方向是<strong>輕微偏多</strong>。<br>
+          <strong>最大回檔 (Max Drawdown):</strong> 就任前後 6 個月內 SPX 中位數 <span class="r" id="t1-medd">—</span>。
+          <strong>12 位中 12 位都出現過明顯回檔</strong>，超過半數 ≥ -10%。<br>
+          兩個結論並不矛盾: <span class="b">市場通常先震一下，然後仍然往上走</span>。
+          流通的「新主席必跌」圖表用的是回檔口徑，並非錯誤，只是回答了不同的問題。
+        </div>
+      </div>
+
+      <div class="takeaway-card t-2">
+        <div class="card-accent"></div>
+        <div class="takeaway-num">TAKEAWAY 02 · DRAWDOWN PATTERN</div>
+        <div class="takeaway-title">回檔幾乎是常態，幅度差異主要看宏觀</div>
+        <div class="takeaway-body">
+          <strong>最深回檔 (近 50 年):</strong><br>
+          • Greenspan 1987: <span class="r">-33.5%</span> (黑色星期一)<br>
+          • Burns 1970: <span class="r">-25.9%</span> (戰後通膨初期)<br>
+          • Powell 2018: <span class="r">-10.2%</span> (Volmageddon)<br>
+          • Volcker 1979: <span class="r">-10.3%</span> (升息週期啟動)<br>
+          • Bernanke 2006: <span class="r">-7.7%</span> (升息末期 mini-correction)<br>
+          • Yellen 2014: <span class="r">-5.8%</span> (QE 退場餘波)<br>
+          5 位中 3 位的峰值早於 T0 (Pre-T0 peak)，意即<strong>市場在主席就任前就開始 derisk</strong>。</div>
+      </div>
+
+      <div class="takeaway-card t-3">
+        <div class="card-accent"></div>
+        <div class="takeaway-num">TAKEAWAY 03 · HAWKISH ≠ BEARISH (FULL YEAR)</div>
+        <div class="takeaway-title">短期震盪不等於全年熊市</div>
+        <div class="takeaway-body">
+          Volcker 1979 上任後 SPX 出現 <span class="r">-10.3%</span> 回檔，
+          但<strong> 1 年後反而 <span class="g">+15.76%</span></strong>。
+          Bernanke 2006 也有 <span class="r">-7.7%</span> 回檔，但 +1Y <span class="g">+12.75%</span>。
+          市場短期波動是<strong>對新主席「政策可信度」的價格發現</strong>，
+          可信度建立後通常能在 6-12 個月內恢復。
+          <span class="a">唯二的全年深度負報酬 (Meyer, Greenspan) 均為宏觀危機觸發，並非主席本人造成</span>。
+        </div>
+      </div>
+
+      <div class="takeaway-card t-4">
+        <div class="card-accent"></div>
+        <div class="takeaway-num">TAKEAWAY 04 · NDX HIGH-BETA</div>
+        <div class="takeaway-title">NASDAQ-100 樣本只有 4 筆，但回檔系統性更深</div>
+        <div class="takeaway-body">
+          <strong>NDX +1Y 報酬:</strong> Greenspan <span class="r">-17.14%</span> · Bernanke <span class="g">+4.58%</span> · Yellen <span class="g">+22.92%</span> · Powell <span class="g">+8.12%</span>。
+          中位數 <span class="b" id="t4-med">—</span>。<br>
+          <strong>NDX 最大回檔 vs SPX:</strong><br>
+          • Greenspan: NDX <span class="r">-39.93%</span> vs SPX <span class="r">-33.51%</span><br>
+          • Bernanke: NDX <span class="r">-17.42%</span> vs SPX <span class="r">-7.70%</span><br>
+          • Yellen: NDX <span class="r">-7.52%</span> vs SPX <span class="r">-5.76%</span><br>
+          • Powell: NDX <span class="r">-10.38%</span> vs SPX <span class="r">-10.16%</span><br>
+          4 / 4 案例 NDX 回檔深於 SPX，平均深 <span class="a">~5pp</span>。
+          <strong>啟示:</strong> Warsh 任期內若 SPX 預備在 -10% 加碼，NDX 對應位置應預備 ~-15%。
+        </div>
+      </div>
+
+      <div class="takeaway-card t-5 full">
+        <div class="card-accent"></div>
+        <div class="takeaway-num">TAKEAWAY 05 · WARSH FORWARD VIEW</div>
+        <div class="takeaway-title">Warsh 任期前瞻 · 兩種情境路徑</div>
+        <div class="takeaway-body">
+          以 SPX <span class="b" id="t5-t0">—</span> (2026-05-15, Warsh T0) 為起點，從<strong>兩個視角</strong>:
+        </div>
+        <div class="scenario-row">
+          <div class="scenario bull">
+            <div class="sc-label">BULL · +1Y 75th percentile</div>
+            <div class="sc-value" id="t5-bull">—</div>
+            <div class="sc-sub">如 Yellen 2014 路徑 +17.7%</div>
+          </div>
+          <div class="scenario base">
+            <div class="sc-label">BASE · +1Y Median</div>
+            <div class="sc-value" id="t5-base">—</div>
+            <div class="sc-sub">歷史中位數路徑</div>
+          </div>
+          <div class="scenario bear">
+            <div class="sc-label">震盪低點 · DD Median</div>
+            <div class="sc-value" id="t5-bear">—</div>
+            <div class="sc-sub">就任 6M 內中位數回檔 -10.6%</div>
+          </div>
+        </div>
+        <div class="takeaway-body" style="margin-top: 14px;">
+          <strong>實務應用:</strong>
+          (1) <span class="r">部位管理</span> — 若依歷史 Median DD 配置，
+              預備在 SPX <span class="b" id="t5-buy-zone">—</span> 區間加碼;
+          (2) <span class="a">時機判讀</span> — 5 位現代主席中 3 位的峰值在就任前 (Pre-T0 peak)，
+              即<strong>本週可能已是區間高點</strong>，但 Warsh 樣本仍待觀察;
+          (3) <span class="b">首次會議 6/16-17 FOMC</span> 為首個關鍵訊號釋出點，
+              市場對 Warsh 政策可信度的定價將在這次會議後浮現;
+          (4) <span class="p">資產負債表縮減</span> — Warsh 主張加速 QT，
+              若兌現將直接壓縮淨流動性 (當前 NL 處 $5.5-6.0T 不安區)。
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <div class="footer">
+    <div class="footer-left">FED CHAIR INAUGURATION DASHBOARD · v1.0 · 2026.05.17</div>
+    <div class="footer-right">數據: Shiller, Yahoo Finance, Federal Reserve · 僅供研究參考，非投資建議</div>
+  </div>
+
+</div>
+
+<script>
+// ====== DATA INJECTION ======
+const RECORDS = [{"name_en":"Charles Hamlin","name_zh":"Hamlin","party":"D","appointer":"Wilson","t0":"1914-08-10","src":"monthly","spx_t0_d":"1914-08*","spx_t0":7.68,"spx_1m_d":"1914-09*","spx_1m":7.68,"spx_1m_p":0.0,"spx_3m_d":"1914-11*","spx_3m":7.68,"spx_3m_p":0.0,"spx_6m_d":"1915-02*","spx_6m":7.38,"spx_6m_p":-3.91,"spx_1y_d":"1915-08*","spx_1y":8.35,"spx_1y_p":8.72,"ndx_t0_d":null,"ndx_t0":null,"ndx_1m_d":null,"ndx_1m":null,"ndx_1m_p":null,"ndx_3m_d":null,"ndx_3m":null,"ndx_3m_p":null,"ndx_6m_d":null,"ndx_6m":null,"ndx_6m_p":null,"ndx_1y_d":null,"ndx_1y":null,"ndx_1y_p":null,"spx_dd_pct":null,"spx_dd_peak":null,"spx_dd_peak_d":null,"spx_dd_trough":null,"spx_dd_trough_d":null,"spx_dd_pre":null,"spx_dd_inprogress":false,"ndx_dd_pct":null,"ndx_dd_peak":null,"ndx_dd_peak_d":null,"ndx_dd_trough":null,"ndx_dd_trough_d":null,"ndx_dd_pre":null,"ndx_dd_inprogress":false},{"name_en":"W.P.G. Harding","name_zh":"Harding","party":"D","appointer":"Wilson","t0":"1916-08-10","src":"monthly","spx_t0_d":"1916-08*","spx_t0":9.3,"spx_1m_d":"1916-09*","spx_1m":9.68,"spx_1m_p":4.09,"spx_3m_d":"1916-11*","spx_3m":10.21,"spx_3m_p":9.78,"spx_6m_d":"1917-02*","spx_6m":9.03,"spx_6m_p":-2.9,"spx_1y_d":"1917-08*","spx_1y":8.53,"spx_1y_p":-8.28,"ndx_t0_d":null,"ndx_t0":null,"ndx_1m_d":null,"ndx_1m":null,"ndx_1m_p":null,"ndx_3m_d":null,"ndx_3m":null,"ndx_3m_p":null,"ndx_6m_d":null,"ndx_6m":null,"ndx_6m_p":null,"ndx_1y_d":null,"ndx_1y":null,"ndx_1y_p":null,"spx_dd_pct":null,"spx_dd_peak":null,"spx_dd_peak_d":null,"spx_dd_trough":null,"spx_dd_trough_d":null,"spx_dd_pre":null,"spx_dd_inprogress":false,"ndx_dd_pct":null,"ndx_dd_peak":null,"ndx_dd_peak_d":null,"ndx_dd_trough":null,"ndx_dd_trough_d":null,"ndx_dd_pre":null,"ndx_dd_inprogress":false},{"name_en":"Daniel Crissinger","name_zh":"Crissinger","party":"R","appointer":"Harding","t0":"1923-05-01","src":"monthly","spx_t0_d":"1923-05*","spx_t0":8.67,"spx_1m_d":"1923-06*","spx_1m":8.34,"spx_1m_p":-3.81,"spx_3m_d":"1923-08*","spx_3m":8.1,"spx_3m_p":-6.57,"spx_6m_d":"1923-11*","spx_6m":8.27,"spx_6m_p":-4.61,"spx_1y_d":"1924-05*","spx_1y":8.47,"spx_1y_p":-2.31,"ndx_t0_d":null,"ndx_t0":null,"ndx_1m_d":null,"ndx_1m":null,"ndx_1m_p":null,"ndx_3m_d":null,"ndx_3m":null,"ndx_3m_p":null,"ndx_6m_d":null,"ndx_6m":null,"ndx_6m_p":null,"ndx_1y_d":null,"ndx_1y":null,"ndx_1y_p":null,"spx_dd_pct":null,"spx_dd_peak":null,"spx_dd_peak_d":null,"spx_dd_trough":null,"spx_dd_trough_d":null,"spx_dd_pre":null,"spx_dd_inprogress":false,"ndx_dd_pct":null,"ndx_dd_peak":null,"ndx_dd_peak_d":null,"ndx_dd_trough":null,"ndx_dd_trough_d":null,"ndx_dd_pre":null,"ndx_dd_inprogress":false},{"name_en":"Roy Young","name_zh":"Young","party":"R","appointer":"Coolidge","t0":"1927-10-04","src":"monthly","spx_t0_d":"1927-10*","spx_t0":16.68,"spx_1m_d":"1927-11*","spx_1m":17.06,"spx_1m_p":2.28,"spx_3m_d":"1928-01*","spx_3m":17.53,"spx_3m_p":5.1,"spx_6m_d":"1928-04*","spx_6m":19.4,"spx_6m_p":16.31,"spx_1y_d":"1928-10*","spx_1y":21.6,"spx_1y_p":29.5,"ndx_t0_d":null,"ndx_t0":null,"ndx_1m_d":null,"ndx_1m":null,"ndx_1m_p":null,"ndx_3m_d":null,"ndx_3m":null,"ndx_3m_p":null,"ndx_6m_d":null,"ndx_6m":null,"ndx_6m_p":null,"ndx_1y_d":null,"ndx_1y":null,"ndx_1y_p":null,"spx_dd_pct":null,"spx_dd_peak":null,"spx_dd_peak_d":null,"spx_dd_trough":null,"spx_dd_trough_d":null,"spx_dd_pre":null,"spx_dd_inprogress":false,"ndx_dd_pct":null,"ndx_dd_peak":null,"ndx_dd_peak_d":null,"ndx_dd_trough":null,"ndx_dd_trough_d":null,"ndx_dd_pre":null,"ndx_dd_inprogress":false},{"name_en":"Eugene Meyer","name_zh":"Meyer","party":"R","appointer":"Hoover","t0":"1930-09-16","src":"daily","spx_t0_d":"1930-09-16","spx_t0":21.22,"spx_1m_d":"1930-10-16","spx_1m":17.88,"spx_1m_p":-15.74,"spx_3m_d":"1930-12-16","spx_3m":14.44,"spx_3m_p":-31.95,"spx_6m_d":"1931-03-17","spx_6m":17.58,"spx_6m_p":-17.15,"spx_1y_d":"1931-09-16","spx_1y":11.82,"spx_1y_p":-44.3,"ndx_t0_d":null,"ndx_t0":null,"ndx_1m_d":null,"ndx_1m":null,"ndx_1m_p":null,"ndx_3m_d":null,"ndx_3m":null,"ndx_3m_p":null,"ndx_6m_d":null,"ndx_6m":null,"ndx_6m_p":null,"ndx_1y_d":null,"ndx_1y":null,"ndx_1y_p":null,"spx_dd_pct":-33.94,"spx_dd_peak":21.86,"spx_dd_peak_d":"1930-09-10","spx_dd_trough":14.44,"spx_dd_trough_d":"1930-12-16","spx_dd_pre":true,"spx_dd_inprogress":false,"ndx_dd_pct":null,"ndx_dd_peak":null,"ndx_dd_peak_d":null,"ndx_dd_trough":null,"ndx_dd_trough_d":null,"ndx_dd_pre":null,"ndx_dd_inprogress":false},{"name_en":"Eugene Black","name_zh":"Black","party":"D","appointer":"FDR","t0":"1933-05-19","src":"daily","spx_t0_d":"1933-05-19","spx_t0":8.82,"spx_1m_d":"1933-06-19","spx_1m":10.68,"spx_1m_p":21.09,"spx_3m_d":"1933-08-18","spx_3m":10.58,"spx_3m_p":19.95,"spx_6m_d":"1933-11-17","spx_6m":9.92,"spx_6m_p":12.47,"spx_1y_d":"1934-05-21","spx_1y":9.87,"spx_1y_p":11.9,"ndx_t0_d":null,"ndx_t0":null,"ndx_1m_d":null,"ndx_1m":null,"ndx_1m_p":null,"ndx_3m_d":null,"ndx_3m":null,"ndx_3m_p":null,"ndx_6m_d":null,"ndx_6m":null,"ndx_6m_p":null,"ndx_1y_d":null,"ndx_1y":null,"ndx_1y_p":null,"spx_dd_pct":-29.43,"spx_dd_peak":12.2,"spx_dd_peak_d":"1933-07-18","spx_dd_trough":8.61,"spx_dd_trough_d":"1933-10-19","spx_dd_pre":false,"spx_dd_inprogress":false,"ndx_dd_pct":null,"ndx_dd_peak":null,"ndx_dd_peak_d":null,"ndx_dd_trough":null,"ndx_dd_trough_d":null,"ndx_dd_pre":null,"ndx_dd_inprogress":false},{"name_en":"Marriner Eccles","name_zh":"Eccles","party":"D","appointer":"FDR","t0":"1934-11-15","src":"daily","spx_t0_d":"1934-11-15","spx_t0":9.0,"spx_1m_d":"1934-12-17","spx_1m":9.17,"spx_1m_p":1.89,"spx_3m_d":"1935-02-14","spx_3m":9.01,"spx_3m_p":0.11,"spx_6m_d":"1935-05-16","spx_6m":9.15,"spx_6m_p":1.67,"spx_1y_d":"1935-11-15","spx_1y":13.25,"spx_1y_p":47.22,"ndx_t0_d":null,"ndx_t0":null,"ndx_1m_d":null,"ndx_1m":null,"ndx_1m_p":null,"ndx_3m_d":null,"ndx_3m":null,"ndx_3m_p":null,"ndx_6m_d":null,"ndx_6m":null,"ndx_6m_p":null,"ndx_1y_d":null,"ndx_1y":null,"ndx_1y_p":null,"spx_dd_pct":-15.87,"spx_dd_peak":9.58,"spx_dd_peak_d":"1935-01-07","spx_dd_trough":8.06,"spx_dd_trough_d":"1935-03-14","spx_dd_pre":false,"spx_dd_inprogress":false,"ndx_dd_pct":null,"ndx_dd_peak":null,"ndx_dd_peak_d":null,"ndx_dd_trough":null,"ndx_dd_trough_d":null,"ndx_dd_pre":null,"ndx_dd_inprogress":false},{"name_en":"Thomas McCabe","name_zh":"McCabe","party":"D","appointer":"Truman","t0":"1948-04-15","src":"daily","spx_t0_d":"1948-04-15","spx_t0":15.38,"spx_1m_d":"1948-05-17","spx_1m":16.61,"spx_1m_p":8.0,"spx_3m_d":"1948-07-15","spx_3m":16.48,"spx_3m_p":7.15,"spx_6m_d":"1948-10-14","spx_6m":16.14,"spx_6m_p":4.94,"spx_1y_d":"1949-04-18","spx_1y":15.07,"spx_1y_p":-2.02,"ndx_t0_d":null,"ndx_t0":null,"ndx_1m_d":null,"ndx_1m":null,"ndx_1m_p":null,"ndx_3m_d":null,"ndx_3m":null,"ndx_3m_p":null,"ndx_6m_d":null,"ndx_6m":null,"ndx_6m_p":null,"ndx_1y_d":null,"ndx_1y":null,"ndx_1y_p":null,"spx_dd_pct":-10.96,"spx_dd_peak":17.06,"spx_dd_peak_d":"1948-06-15","spx_dd_trough":15.19,"spx_dd_trough_d":"1948-09-27","spx_dd_pre":false,"spx_dd_inprogress":false,"ndx_dd_pct":null,"ndx_dd_peak":null,"ndx_dd_peak_d":null,"ndx_dd_trough":null,"ndx_dd_trough_d":null,"ndx_dd_pre":null,"ndx_dd_inprogress":false},{"name_en":"William M. Martin","name_zh":"Martin","party":"D","appointer":"Truman","t0":"1951-04-02","src":"daily","spx_t0_d":"1951-04-02","spx_t0":21.32,"spx_1m_d":"1951-05-02","spx_1m":22.62,"spx_1m_p":6.1,"spx_3m_d":"1951-07-02","spx_3m":21.1,"spx_3m_p":-1.03,"spx_6m_d":"1951-10-01","spx_6m":23.47,"spx_6m_p":10.08,"spx_1y_d":"1952-04-01","spx_1y":24.18,"spx_1y_p":13.41,"ndx_t0_d":null,"ndx_t0":null,"ndx_1m_d":null,"ndx_1m":null,"ndx_1m_p":null,"ndx_3m_d":null,"ndx_3m":null,"ndx_3m_p":null,"ndx_6m_d":null,"ndx_6m":null,"ndx_6m_p":null,"ndx_1y_d":null,"ndx_1y":null,"ndx_1y_p":null,"spx_dd_pct":-8.11,"spx_dd_peak":22.81,"spx_dd_peak_d":"1951-05-03","spx_dd_trough":20.96,"spx_dd_trough_d":"1951-06-29","spx_dd_pre":false,"spx_dd_inprogress":false,"ndx_dd_pct":null,"ndx_dd_peak":null,"ndx_dd_peak_d":null,"ndx_dd_trough":null,"ndx_dd_trough_d":null,"ndx_dd_pre":null,"ndx_dd_inprogress":false},{"name_en":"Arthur Burns","name_zh":"Burns","party":"R","appointer":"Nixon","t0":"1970-02-01","src":"daily","spx_t0_d":"1970-02-02","spx_t0":85.75,"spx_1m_d":"1970-03-04","spx_1m":90.04,"spx_1m_p":5.0,"spx_3m_d":"1970-05-04","spx_3m":79.37,"spx_3m_p":-7.44,"spx_6m_d":"1970-08-03","spx_6m":77.02,"spx_6m_p":-10.18,"spx_1y_d":"1971-02-02","spx_1y":96.43,"spx_1y_p":12.45,"ndx_t0_d":null,"ndx_t0":null,"ndx_1m_d":null,"ndx_1m":null,"ndx_1m_p":null,"ndx_3m_d":null,"ndx_3m":null,"ndx_3m_p":null,"ndx_6m_d":null,"ndx_6m":null,"ndx_6m_p":null,"ndx_1y_d":null,"ndx_1y":null,"ndx_1y_p":null,"spx_dd_pct":-25.86,"spx_dd_peak":93.46,"spx_dd_peak_d":"1970-01-05","spx_dd_trough":69.29,"spx_dd_trough_d":"1970-05-26","spx_dd_pre":true,"spx_dd_inprogress":false,"ndx_dd_pct":null,"ndx_dd_peak":null,"ndx_dd_peak_d":null,"ndx_dd_trough":null,"ndx_dd_trough_d":null,"ndx_dd_pre":null,"ndx_dd_inprogress":false},{"name_en":"G. William Miller","name_zh":"Miller","party":"D","appointer":"Carter","t0":"1978-03-08","src":"daily","spx_t0_d":"1978-03-08","spx_t0":87.84,"spx_1m_d":"1978-04-07","spx_1m":90.17,"spx_1m_p":2.65,"spx_3m_d":"1978-06-07","spx_3m":100.12,"spx_3m_p":13.98,"spx_6m_d":"1978-09-06","spx_6m":105.38,"spx_6m_p":19.97,"spx_1y_d":"1979-03-08","spx_1y":99.58,"spx_1y_p":13.37,"ndx_t0_d":null,"ndx_t0":null,"ndx_1m_d":null,"ndx_1m":null,"ndx_1m_p":null,"ndx_3m_d":null,"ndx_3m":null,"ndx_3m_p":null,"ndx_6m_d":null,"ndx_6m":null,"ndx_6m_p":null,"ndx_1y_d":null,"ndx_1y":null,"ndx_1y_p":null,"spx_dd_pct":-6.03,"spx_dd_peak":100.32,"spx_dd_peak_d":"1978-06-06","spx_dd_trough":94.27,"spx_dd_trough_d":"1978-07-05","spx_dd_pre":false,"spx_dd_inprogress":false,"ndx_dd_pct":null,"ndx_dd_peak":null,"ndx_dd_peak_d":null,"ndx_dd_trough":null,"ndx_dd_trough_d":null,"ndx_dd_pre":null,"ndx_dd_inprogress":false},{"name_en":"Paul Volcker","name_zh":"Volcker","party":"D","appointer":"Carter","t0":"1979-08-06","src":"daily","spx_t0_d":"1979-08-06","spx_t0":104.3,"spx_1m_d":"1979-09-05","spx_1m":106.4,"spx_1m_p":2.01,"spx_3m_d":"1979-11-05","spx_3m":101.82,"spx_3m_p":-2.38,"spx_6m_d":"1980-02-04","spx_6m":114.37,"spx_6m_p":9.65,"spx_1y_d":"1980-08-05","spx_1y":120.74,"spx_1y_p":15.76,"ndx_t0_d":null,"ndx_t0":null,"ndx_1m_d":null,"ndx_1m":null,"ndx_1m_p":null,"ndx_3m_d":null,"ndx_3m":null,"ndx_3m_p":null,"ndx_6m_d":null,"ndx_6m":null,"ndx_6m_p":null,"ndx_1y_d":null,"ndx_1y":null,"ndx_1y_p":null,"spx_dd_pct":-10.25,"spx_dd_peak":111.27,"spx_dd_peak_d":"1979-10-05","spx_dd_trough":99.87,"spx_dd_trough_d":"1979-11-07","spx_dd_pre":false,"spx_dd_inprogress":false,"ndx_dd_pct":null,"ndx_dd_peak":null,"ndx_dd_peak_d":null,"ndx_dd_trough":null,"ndx_dd_trough_d":null,"ndx_dd_pre":null,"ndx_dd_inprogress":false},{"name_en":"Alan Greenspan","name_zh":"Greenspan","party":"R","appointer":"Reagan","t0":"1987-08-11","src":"daily","spx_t0_d":"1987-08-11","spx_t0":333.33,"spx_1m_d":"1987-09-10","spx_1m":317.13,"spx_1m_p":-4.86,"spx_3m_d":"1987-11-10","spx_3m":239.0,"spx_3m_p":-28.3,"spx_6m_d":"1988-02-09","spx_6m":251.72,"spx_6m_p":-24.48,"spx_1y_d":"1988-08-10","spx_1y":261.9,"spx_1y_p":-21.43,"ndx_t0_d":"1987-08-11","ndx_t0":208.39,"ndx_1m_d":"1987-09-10","ndx_1m":205.16,"ndx_1m_p":-1.55,"ndx_3m_d":"1987-11-10","ndx_3m":143.45,"ndx_3m_p":-31.17,"ndx_6m_d":"1988-02-09","ndx_6m":158.93,"ndx_6m_p":-23.73,"ndx_1y_d":"1988-08-10","ndx_1y":172.68,"ndx_1y_p":-17.14,"spx_dd_pct":-33.51,"spx_dd_peak":336.77,"spx_dd_peak_d":"1987-08-25","spx_dd_trough":223.92,"spx_dd_trough_d":"1987-12-04","spx_dd_pre":false,"spx_dd_inprogress":false,"ndx_dd_pct":-39.93,"ndx_dd_peak":213.81,"ndx_dd_peak_d":"1987-10-05","ndx_dd_trough":128.43,"ndx_dd_trough_d":"1987-10-26","ndx_dd_pre":false,"ndx_dd_inprogress":false},{"name_en":"Ben Bernanke","name_zh":"Bernanke","party":"R","appointer":"G.W.Bush","t0":"2006-02-01","src":"daily","spx_t0_d":"2006-02-01","spx_t0":1282.46,"spx_1m_d":"2006-03-03","spx_1m":1287.23,"spx_1m_p":0.37,"spx_3m_d":"2006-05-03","spx_3m":1308.12,"spx_3m_p":2.0,"spx_6m_d":"2006-08-02","spx_6m":1277.41,"spx_6m_p":-0.39,"spx_1y_d":"2007-02-01","spx_1y":1445.94,"spx_1y_p":12.75,"ndx_t0_d":"2006-02-01","ndx_t0":1713.02,"ndx_1m_d":"2006-03-03","ndx_1m":1684.32,"ndx_1m_p":-1.68,"ndx_3m_d":"2006-05-03","ndx_3m":1686.3,"ndx_3m_p":-1.56,"ndx_6m_d":"2006-08-02","ndx_6m":1500.48,"ndx_6m_p":-12.41,"ndx_1y_d":"2007-02-01","ndx_1y":1791.45,"ndx_1y_p":4.58,"spx_dd_pct":-7.7,"spx_dd_peak":1325.76,"spx_dd_peak_d":"2006-05-05","spx_dd_trough":1223.69,"spx_dd_trough_d":"2006-06-13","spx_dd_pre":false,"spx_dd_inprogress":false,"ndx_dd_pct":-17.42,"ndx_dd_peak":1758.24,"ndx_dd_peak_d":"2006-01-11","ndx_dd_trough":1451.88,"ndx_dd_trough_d":"2006-07-21","ndx_dd_pre":true,"ndx_dd_inprogress":false},{"name_en":"Janet Yellen","name_zh":"Yellen","party":"D","appointer":"Obama","t0":"2014-02-03","src":"daily","spx_t0_d":"2014-02-03","spx_t0":1741.89,"spx_1m_d":"2014-03-05","spx_1m":1873.81,"spx_1m_p":7.57,"spx_3m_d":"2014-05-05","spx_3m":1884.66,"spx_3m_p":8.2,"spx_6m_d":"2014-08-04","spx_6m":1938.99,"spx_6m_p":11.32,"spx_1y_d":"2015-02-03","spx_1y":2050.03,"spx_1y_p":17.69,"ndx_t0_d":"2014-02-03","ndx_t0":3440.5,"ndx_1m_d":"2014-03-05","ndx_1m":3727.19,"ndx_1m_p":8.33,"ndx_3m_d":"2014-05-05","ndx_3m":3605.09,"ndx_3m_p":4.78,"ndx_6m_d":"2014-08-04","ndx_6m":3908.77,"ndx_6m_p":13.61,"ndx_1y_d":"2015-02-03","ndx_1y":4229.15,"ndx_1y_p":22.92,"spx_dd_pct":-5.76,"spx_dd_peak":1848.38,"spx_dd_peak_d":"2014-01-15","spx_dd_trough":1741.89,"spx_dd_trough_d":"2014-02-03","spx_dd_pre":true,"spx_dd_inprogress":false,"ndx_dd_pct":-7.52,"ndx_dd_peak":3727.19,"ndx_dd_peak_d":"2014-03-05","ndx_dd_trough":3446.85,"ndx_dd_trough_d":"2014-04-11","ndx_dd_pre":false,"ndx_dd_inprogress":false},{"name_en":"Jerome Powell","name_zh":"Powell","party":"R","appointer":"Trump","t0":"2018-02-05","src":"daily","spx_t0_d":"2018-02-05","spx_t0":2648.94,"spx_1m_d":"2018-03-07","spx_1m":2726.8,"spx_1m_p":2.94,"spx_3m_d":"2018-05-07","spx_3m":2672.63,"spx_3m_p":0.89,"spx_6m_d":"2018-08-06","spx_6m":2850.4,"spx_6m_p":7.61,"spx_1y_d":"2019-02-05","spx_1y":2737.7,"spx_1y_p":3.35,"ndx_t0_d":"2018-02-05","ndx_t0":6495.92,"ndx_1m_d":"2018-03-07","ndx_1m":6929.39,"ndx_1m_p":6.67,"ndx_3m_d":"2018-05-07","ndx_3m":6821.87,"ndx_3m_p":5.02,"ndx_6m_d":"2018-08-06","ndx_6m":7438.99,"ndx_6m_p":14.52,"ndx_1y_d":"2019-02-05","ndx_1y":7023.52,"ndx_1y_p":8.12,"spx_dd_pct":-10.16,"spx_dd_peak":2872.87,"spx_dd_peak_d":"2018-01-26","spx_dd_trough":2581.0,"spx_dd_trough_d":"2018-02-08","spx_dd_pre":true,"spx_dd_inprogress":false,"ndx_dd_pct":-10.38,"ndx_dd_peak":7131.12,"ndx_dd_peak_d":"2018-03-12","ndx_dd_trough":6390.84,"ndx_dd_trough_d":"2018-04-02","ndx_dd_pre":false,"ndx_dd_inprogress":false},{"name_en":"Kevin Warsh","name_zh":"Warsh","party":"R","appointer":"Trump","t0":"2026-05-15","src":"daily","spx_t0_d":"2026-05-15","spx_t0":7408.5,"spx_1m_d":null,"spx_1m":null,"spx_1m_p":null,"spx_3m_d":null,"spx_3m":null,"spx_3m_p":null,"spx_6m_d":null,"spx_6m":null,"spx_6m_p":null,"spx_1y_d":null,"spx_1y":null,"spx_1y_p":null,"ndx_t0_d":"2026-05-15","ndx_t0":29125.2,"ndx_1m_d":null,"ndx_1m":null,"ndx_1m_p":null,"ndx_3m_d":null,"ndx_3m":null,"ndx_3m_p":null,"ndx_6m_d":null,"ndx_6m":null,"ndx_6m_p":null,"ndx_1y_d":null,"ndx_1y":null,"ndx_1y_p":null,"spx_dd_pct":null,"spx_dd_peak":null,"spx_dd_peak_d":null,"spx_dd_trough":null,"spx_dd_trough_d":null,"spx_dd_pre":null,"spx_dd_inprogress":true,"ndx_dd_pct":null,"ndx_dd_peak":null,"ndx_dd_peak_d":null,"ndx_dd_trough":null,"ndx_dd_trough_d":null,"ndx_dd_pre":null,"ndx_dd_inprogress":true}];
+const STATS = {"spx": {"median_1m": 2.47, "median_3m": 0.5, "median_6m": 3.3, "median_1y": 12.18, "mean_1m": 2.47, "mean_3m": -0.66, "mean_6m": 1.9, "mean_1y": 6.74, "median_dd": -10.61, "mean_dd": -16.46, "worst_dd": -33.94, "mildest_dd": -5.76, "best_1y": {"name": "Marriner Eccles", "pct": 47.22}, "worst_1y": {"name": "Eugene Meyer", "pct": -44.3}, "worst_dd_chair": {"name": "Eugene Meyer", "pct": -33.94}, "n_obs": 16, "n_dd": 12, "p25_1y": -2.09, "p75_1y": 14.0}, "ndx": {"median_1m": 2.56, "median_3m": 1.61, "median_6m": 0.6, "median_1y": 6.35, "mean_1m": 2.95, "mean_3m": -5.73, "mean_6m": -2.0, "mean_1y": 4.62, "median_dd": -13.9, "n_obs": 4, "n_dd": 4}, "warsh": {"spx_t0": 7408.5, "ndx_t0": 29125.19921875, "t0": "2026-05-15", "spx_1y_median_target": 8310.84, "spx_dd_median_low": 6622.83}};
+const REF_DATE = new Date('2026-05-17T00:00:00');
+const WARSH_T0_DATE = new Date('2026-05-15T00:00:00');
+
+// ====== HELPERS ======
+const $ = id => document.getElementById(id);
+function fmtPct(v) {
+  if (v === null || v === undefined) return '<span class="na">—</span>';
+  const cls = v >= 0 ? 'up' : 'down';
+  const arrow = v >= 0 ? '▲' : '▼';
+  return '<span class="'+cls+'">'+arrow+' '+(v>0?'+':'')+v.toFixed(2)+'%</span>';
+}
+function fmtPctRaw(v, sign) {
+  if (v === null || v === undefined) return '—';
+  const s = (v > 0 && sign !== false) ? '+' : '';
+  return s + v.toFixed(2) + '%';
+}
+function fmtPrice(v) {
+  if (v === null || v === undefined) return '<span style="color:var(--text-tertiary)">—</span>';
+  return v.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
+}
+function fmtPriceRaw(v) {
+  if (v === null || v === undefined) return '—';
+  return v.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
+}
+function fmtDate(d) {
+  if (!d) return '<span style="color:var(--text-tertiary)">—</span>';
+  if (d.endsWith('*')) {
+    return '<span class="tip-wrap">'+d+'<span class="tip">月度平均 (Shiller 1928 前資料)</span></span>';
+  }
+  return d;
+}
+
+// ====== INIT METRIC CARDS ======
+$('mc-median').textContent = (STATS.spx.median_1y > 0 ? '+' : '') + STATS.spx.median_1y.toFixed(2) + '%';
+$('mc-medd').textContent   = STATS.spx.median_dd.toFixed(2) + '%';
+$('mc-best').textContent   = '+' + STATS.spx.best_1y.pct.toFixed(2) + '%';
+$('mc-best-name').textContent = STATS.spx.best_1y.name + ' (1934)';
+$('mc-worstdd').textContent  = STATS.spx.worst_dd_chair.pct.toFixed(2) + '%';
+$('mc-worstdd-name').textContent = STATS.spx.worst_dd_chair.name + ' (Black Monday)';
+$('mc-warsh').textContent  = fmtPriceRaw(STATS.warsh.spx_t0);
+$('mc-warsh-ndx').textContent = fmtPriceRaw(STATS.warsh.ndx_t0);
+$('mc-n').textContent = STATS.spx.n_obs;
+$('mc-ndd').textContent = STATS.spx.n_dd;
+
+// ====== WARSH TRACKER ======
+$('trkSpx').textContent = fmtPriceRaw(STATS.warsh.spx_t0);
+$('trkNdx').textContent = fmtPriceRaw(STATS.warsh.ndx_t0);
+$('trkTarget').textContent = fmtPriceRaw(STATS.warsh.spx_1y_median_target);
+
+const elapsed = Math.max(0, Math.round((REF_DATE - WARSH_T0_DATE) / (1000*60*60*24)));
+const progressPct = Math.min(100, (elapsed / 365) * 100);
+$('trkDay').textContent = elapsed;
+$('trkFill').style.width = Math.max(0.5, progressPct) + '%';
+$('trkLabel').style.left = Math.max(0.5, progressPct) + '%';
+$('trkLabel').textContent = 'Day ' + elapsed;
+
+// ====== CHART METRICS ======
+function updateChartMeta() {
+  const s = STATS[viewIndex];
+  if (viewMode === 'dd') {
+    const ddvals = RECORDS.map(r => r[viewIndex + '_dd_pct']).filter(v => v !== null && v !== undefined && Math.abs(v) > 0.1);
+    // exclude in-progress Warsh tiny DD from stats
+    $('cm-med').textContent  = s.median_dd !== null && s.median_dd !== undefined ? s.median_dd.toFixed(2) + '%' : '—';
+    $('cm-mean').textContent = s.mean_dd !== null && s.mean_dd !== undefined ? s.mean_dd.toFixed(2) + '%' : '—';
+    if (ddvals.length) {
+      $('cm-range').textContent = `${Math.min(...ddvals).toFixed(1)}% to ${Math.max(...ddvals).toFixed(1)}%`;
+    } else {
+      $('cm-range').textContent = '—';
+    }
+    $('cm-n').textContent = s.n_dd || '—';
+    $('cm-med-label').textContent = 'Median DD';
+    $('cm-mean-label').textContent = 'Mean DD';
+    $('cm-range-label').textContent = 'DD Range';
+    return;
+  }
+  $('cm-med').textContent  = (s.median_1y > 0 ? '+' : '') + s.median_1y.toFixed(2) + '%';
+  $('cm-mean').textContent = (s.mean_1y > 0 ? '+' : '') + s.mean_1y.toFixed(2) + '%';
+  const vals = RECORDS.map(r => r[viewIndex + '_1y_p']).filter(v => v !== null && v !== undefined);
+  $('cm-range').textContent = vals.length ? `${Math.min(...vals).toFixed(1)}% to +${Math.max(...vals).toFixed(1)}%` : '—';
+  $('cm-n').textContent = vals.length;
+  $('cm-med-label').textContent = 'Median +1Y';
+  $('cm-mean-label').textContent = 'Mean +1Y';
+  $('cm-range-label').textContent = 'Range';
+}
+
+// ====== TABLE RENDER ======
+let viewIndex = 'spx';     // 'spx' or 'ndx' for the underlying index
+let viewMode  = 'ret';     // 'ret' (point-to-point) or 'dd' (max drawdown)
+let sortState = { key: null, asc: true };
+
+const VIEW_DEFS = {
+  spx_ret: { idx: 'spx', mode: 'ret', label: '點對點報酬 (Point-to-Point Returns)',
+             def: '從就任日收盤到 T+N 收盤的單期變動，反映宏觀政策方向。' },
+  spx_dd:  { idx: 'spx', mode: 'dd',  label: 'SPX 最大回檔 (Max Drawdown, first 6 months)',
+             def: '就任前後 ~6 個月內，從任一高點到後續低點的最大跌幅。反映波動/壓力，與「市場震一下」的常見圖表口徑一致。' },
+  ndx_ret: { idx: 'ndx', mode: 'ret', label: '點對點報酬 (NASDAQ-100, 1985+)',
+             def: 'NDX 1985 年成立，僅涵蓋 Greenspan 起的 5 任主席，樣本小。' },
+  ndx_dd:  { idx: 'ndx', mode: 'dd',  label: 'NDX 最大回檔 (Max Drawdown, NASDAQ-100)',
+             def: 'NDX 高 Beta 特性使回檔幅度通常深於 SPX。樣本只有 4 位歷史主席。' },
+};
+
+function rowsForView() {
+  if (viewMode === 'dd') {
+    // For DD view, show chairs with EITHER actual DD data OR in-progress flag (Warsh)
+    return RECORDS.filter(r =>
+      (r[viewIndex + '_dd_pct'] !== null && r[viewIndex + '_dd_pct'] !== undefined) ||
+      r[viewIndex + '_dd_inprogress']
+    );
+  }
+  return RECORDS.filter(r => r[viewIndex + '_t0'] !== null && r[viewIndex + '_t0'] !== undefined);
+}
+
+function renderTable() {
+  const tbody = $('dataTable');
+  // Default sort: most recent first (newest at top). User can still click sortable headers.
+  let data = rowsForView().slice();
+  if (sortState.key) {
+    data.sort((a, b) => {
+      const key = viewIndex + '_' + sortState.key;
+      const va = a[key] === null || a[key] === undefined ? -Infinity : a[key];
+      const vb = b[key] === null || b[key] === undefined ? -Infinity : b[key];
+      return sortState.asc ? va - vb : vb - va;
+    });
+  } else {
+    // Reverse chronological default — newest chair on top
+    data.sort((a, b) => b.t0.localeCompare(a.t0));
+  }
+  tbody.innerHTML = '';
+  const v = viewIndex;
+
+  if (viewMode === 'dd') {
+    // Drawdown table: T0 | Peak Date | Peak | Trough Date | Trough | Max DD | From T0
+    $('tableHead').innerHTML =
+      '<tr>' +
+        '<th class="left">主席 / Chair</th>' +
+        '<th>就任日 T0</th>' +
+        '<th>T0 指數</th>' +
+        '<th>峰值日 Peak</th>' +
+        '<th>峰值</th>' +
+        '<th>低點日 Trough</th>' +
+        '<th>低點</th>' +
+        '<th class="sortable" tabindex="0" data-sort="dd_pct">最大回檔 <span class="sort-icon">↕</span></th>' +
+        '<th>峰值早於 T0?</th>' +
+      '</tr>';
+    data.forEach(r => {
+      const tr = document.createElement('tr');
+      if (r.name_en === 'Kevin Warsh') tr.classList.add('highlight');
+      tr.dataset.name = r.name_en;
+      const ddp = r[v+'_dd_pct'];
+      const inprog = r[v+'_dd_inprogress'];
+      const cls = (ddp === null || ddp === undefined) ? 'na' : ddp >= 0 ? 'up' : 'down';
+      const pre = inprog
+        ? '<span style="color:var(--text-tertiary)">進行中 / pending</span>'
+        : (r[v+'_dd_pre'] ? '<span style="color:var(--accent-amber)">前置 / Pre-T0</span>' : '<span style="color:var(--text-tertiary)">否</span>');
+      const ddCell = inprog
+        ? '<td class="pct na" style="font-style:italic">進行中</td>'
+        : '<td class="pct '+cls+'">'+fmtPct(ddp)+'</td>';
+      const dashOrDate = (d) => (inprog || !d) ? '<span style="color:var(--text-tertiary)">—</span>' : d;
+      const dashOrPrice = (p) => (inprog || p === null || p === undefined) ? '<span style="color:var(--text-tertiary)">—</span>' : fmtPrice(p);
+      tr.innerHTML =
+        '<td class="chair-name">'+r.name_en+'<span class="party '+r.party+'">'+r.party+'</span>'+
+          '<span class="meta">'+r.appointer+' · '+r.t0+'</span></td>' +
+        '<td class="date">'+r.t0+'</td>' +
+        '<td class="price">'+fmtPrice(r[v+'_t0'])+'</td>' +
+        '<td class="date">'+dashOrDate(r[v+'_dd_peak_d'])+'</td>' +
+        '<td class="price">'+dashOrPrice(r[v+'_dd_peak'])+'</td>' +
+        '<td class="date">'+dashOrDate(r[v+'_dd_trough_d'])+'</td>' +
+        '<td class="price">'+dashOrPrice(r[v+'_dd_trough'])+'</td>' +
+        ddCell +
+        '<td class="date">'+pre+'</td>';
+      tbody.appendChild(tr);
+    });
+    // Re-wire sortable header (single column now)
+    document.querySelectorAll('#tableHead th.sortable').forEach(th => {
+      th.addEventListener('click', () => handleSort(th));
+    });
+    return;
+  }
+
+  // Returns table (full grid)
+  $('tableHead').innerHTML =
+    '<tr>' +
+      '<th rowspan="2" class="left">主席 / Chair</th>' +
+      '<th colspan="2">T0 (就任)</th>' +
+      '<th colspan="3">+1個月</th>' +
+      '<th colspan="3">+3個月</th>' +
+      '<th colspan="3">+6個月</th>' +
+      '<th colspan="3">+1年</th>' +
+    '</tr><tr>' +
+      '<th class="sub-header">日期</th>' +
+      '<th class="sub-header">指數</th>' +
+      '<th class="sub-header">日期</th>' +
+      '<th class="sub-header">指數</th>' +
+      '<th class="sub-header sortable" tabindex="0" data-sort="1m_p">變動 <span class="sort-icon">↕</span></th>' +
+      '<th class="sub-header">日期</th>' +
+      '<th class="sub-header">指數</th>' +
+      '<th class="sub-header sortable" tabindex="0" data-sort="3m_p">變動 <span class="sort-icon">↕</span></th>' +
+      '<th class="sub-header">日期</th>' +
+      '<th class="sub-header">指數</th>' +
+      '<th class="sub-header sortable" tabindex="0" data-sort="6m_p">變動 <span class="sort-icon">↕</span></th>' +
+      '<th class="sub-header">日期</th>' +
+      '<th class="sub-header">指數</th>' +
+      '<th class="sub-header sortable" tabindex="0" data-sort="1y_p">變動 <span class="sort-icon">↕</span></th>' +
+    '</tr>';
+  data.forEach(r => {
+    const tr = document.createElement('tr');
+    if (r.name_en === 'Kevin Warsh') tr.classList.add('highlight');
+    tr.dataset.name = r.name_en;
+    tr.innerHTML =
+      '<td class="chair-name">'+r.name_en+'<span class="party '+r.party+'">'+r.party+'</span>'+
+        '<span class="meta">'+r.appointer+' · '+r.t0+'</span></td>' +
+      '<td class="date">'+fmtDate(r[v+'_t0_d'])+'</td>' +
+      '<td class="price">'+fmtPrice(r[v+'_t0'])+'</td>' +
+      '<td class="date">'+fmtDate(r[v+'_1m_d'])+'</td>' +
+      '<td class="price">'+fmtPrice(r[v+'_1m'])+'</td>' +
+      '<td class="pct '+(r[v+'_1m_p']===null||r[v+'_1m_p']===undefined?'na':r[v+'_1m_p']>=0?'up':'down')+'">'+fmtPct(r[v+'_1m_p'])+'</td>' +
+      '<td class="date">'+fmtDate(r[v+'_3m_d'])+'</td>' +
+      '<td class="price">'+fmtPrice(r[v+'_3m'])+'</td>' +
+      '<td class="pct '+(r[v+'_3m_p']===null||r[v+'_3m_p']===undefined?'na':r[v+'_3m_p']>=0?'up':'down')+'">'+fmtPct(r[v+'_3m_p'])+'</td>' +
+      '<td class="date">'+fmtDate(r[v+'_6m_d'])+'</td>' +
+      '<td class="price">'+fmtPrice(r[v+'_6m'])+'</td>' +
+      '<td class="pct '+(r[v+'_6m_p']===null||r[v+'_6m_p']===undefined?'na':r[v+'_6m_p']>=0?'up':'down')+'">'+fmtPct(r[v+'_6m_p'])+'</td>' +
+      '<td class="date">'+fmtDate(r[v+'_1y_d'])+'</td>' +
+      '<td class="price">'+fmtPrice(r[v+'_1y'])+'</td>' +
+      '<td class="pct '+(r[v+'_1y_p']===null||r[v+'_1y_p']===undefined?'na':r[v+'_1y_p']>=0?'up':'down')+'">'+fmtPct(r[v+'_1y_p'])+'</td>';
+    tbody.appendChild(tr);
+  });
+  // Re-wire sortable headers
+  document.querySelectorAll('#tableHead th.sortable').forEach(th => {
+    th.addEventListener('click', () => handleSort(th));
+    th.addEventListener('keydown', e => {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleSort(th); }
+    });
+  });
+}
+
+// ====== CHART ======
+let chart;
+function buildChart() {
+  if (chart) chart.destroy();
+  const view = viewIndex;
+  // Chart always uses chronological order (oldest left → newest right) for time intuition
+  const data = rowsForView().slice().sort((a,b) => a.t0.localeCompare(b.t0));
+  const labels = data.map(r => r.name_zh);
+
+  let datasets;
+  if (viewMode === 'dd') {
+    const dd_vals = data.map(r => r[view+'_dd_pct']);
+    datasets = [{
+      label: 'Max DD',
+      data: dd_vals,
+      backgroundColor: dd_vals.map(v => v === null ? 'rgba(115,115,135,0.3)' : 'rgba(248,113,113,0.7)'),
+      borderColor: '#f87171',
+      borderWidth: 1, borderRadius: 3, barPercentage: 0.7, categoryPercentage: 0.85,
+    }];
+  } else {
+    datasets = [
+      { label: '+1M', data: data.map(r => r[view+'_1m_p']), backgroundColor: 'rgba(52,211,153,0.7)',  borderColor: '#34d399', borderWidth: 1, borderRadius: 3, barPercentage: 0.85, categoryPercentage: 0.78 },
+      { label: '+3M', data: data.map(r => r[view+'_3m_p']), backgroundColor: 'rgba(96,165,250,0.7)',  borderColor: '#60a5fa', borderWidth: 1, borderRadius: 3, barPercentage: 0.85, categoryPercentage: 0.78 },
+      { label: '+6M', data: data.map(r => r[view+'_6m_p']), backgroundColor: 'rgba(167,139,250,0.7)', borderColor: '#a78bfa', borderWidth: 1, borderRadius: 3, barPercentage: 0.85, categoryPercentage: 0.78 },
+      { label: '+1Y', data: data.map(r => r[view+'_1y_p']), backgroundColor: 'rgba(251,191,36,0.7)',  borderColor: '#fbbf24', borderWidth: 1, borderRadius: 3, barPercentage: 0.85, categoryPercentage: 0.78 },
+    ];
+  }
+
+  chart = new Chart($('barChart'), {
+    type: 'bar',
+    data: { labels: labels, datasets: datasets },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      interaction: { mode: 'index', intersect: false },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: '#1a1a26',
+          borderColor: 'rgba(255,255,255,0.1)',
+          borderWidth: 1,
+          titleFont: { family: "'Noto Sans TC', sans-serif", size: 13, weight: '600' },
+          bodyFont: { family: "'JetBrains Mono', monospace", size: 12 },
+          padding: 14,
+          callbacks: {
+            title: items => {
+              const r = data[items[0].dataIndex];
+              return r.name_en + ' (' + r.t0.slice(0,4) + ')';
+            },
+            label: item => {
+              const v = item.raw;
+              if (v === null || v === undefined) return ' ' + item.dataset.label + ': 待出 / pending';
+              if (viewMode === 'dd') {
+                const r = data[item.dataIndex];
+                const lines = [
+                  ' Max DD: ' + v.toFixed(2) + '%',
+                  ' Peak:   ' + r[view+'_dd_peak_d'] + '  $' + (r[view+'_dd_peak']||0).toFixed(2),
+                  ' Trough: ' + r[view+'_dd_trough_d'] + '  $' + (r[view+'_dd_trough']||0).toFixed(2),
+                  r[view+'_dd_pre'] ? ' (peak pre-T0)' : '',
+                ];
+                return lines.filter(Boolean);
+              }
+              return ' ' + item.dataset.label + ': ' + (v > 0 ? '+' : '') + v.toFixed(2) + '%';
+            }
+          }
+        }
+      },
+      scales: {
+        x: {
+          ticks: { color: '#8a8a96', font: { family: "'Noto Sans TC', sans-serif", size: 11 }, maxRotation: 45, minRotation: 30 },
+          grid: { display: false },
+          border: { color: 'rgba(255,255,255,0.06)' }
+        },
+        y: {
+          ticks: { color: '#737387', font: { family: "'JetBrains Mono', monospace", size: 11 }, callback: v => (v > 0 ? '+' : '') + v + '%' },
+          grid: { color: ctx => ctx.tick.value === 0 ? 'rgba(255,255,255,0.22)' : 'rgba(255,255,255,0.04)', lineWidth: ctx => ctx.tick.value === 0 ? 2 : 1 },
+          border: { display: false }
+        }
+      },
+      onHover: (event, elements) => {
+        document.querySelectorAll('#dataTable tr.chart-hover').forEach(r => r.classList.remove('chart-hover'));
+        if (elements.length > 0) {
+          const i = elements[0].index;
+          const name = data[i].name_en;
+          const row = document.querySelector('#dataTable tr[data-name="'+name+'"]');
+          if (row) row.classList.add('chart-hover');
+        }
+      },
+      onClick: (event, elements) => {
+        if (elements.length > 0) {
+          const name = data[elements[0].index].name_en;
+          const row = document.querySelector('#dataTable tr[data-name="'+name+'"]');
+          if (row) row.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+        }
+      }
+    }
+  });
+}
+
+// ====== TABS ======
+document.querySelectorAll('.tab').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.tab').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    const def = VIEW_DEFS[btn.dataset.view];
+    viewIndex = def.idx; viewMode = def.mode;
+    sortState = { key: null, asc: true };
+    $('me-current').textContent = def.label;
+    $('me-def').textContent = def.def;
+    // Show/hide chart legend dots based on mode
+    document.getElementById('returnLegend').style.display = viewMode === 'dd' ? 'none' : 'flex';
+    document.getElementById('ddLegend').style.display = viewMode === 'dd' ? 'flex' : 'none';
+    renderTable();
+    buildChart();
+    updateChartMeta();
+  });
+});
+
+// ====== SORTING (handled dynamically in renderTable for header rewire) ======
+function handleSort(th) {
+  const key = th.dataset.sort;
+  if (sortState.key === key) sortState.asc = !sortState.asc;
+  else { sortState.key = key; sortState.asc = false; }
+  renderTable();
+  document.querySelectorAll('#tableHead th.sortable').forEach(h => {
+    h.classList.remove('active');
+    const ic = h.querySelector('.sort-icon');
+    if (ic) ic.textContent = '↕';
+  });
+  th.classList.add('active');
+  const ic = th.querySelector('.sort-icon');
+  if (ic) ic.textContent = sortState.asc ? '↑' : '↓';
+}
+
+// ====== TAKEAWAY BINDINGS ======
+(function bindTakeaways() {
+  const s = STATS.spx;
+  const validVals = RECORDS.map(r => r.spx_1y_p).filter(v => v !== null && v !== undefined);
+  const positives = validVals.filter(v => v >= 0).length;
+  $('t1-med').textContent  = (s.median_1y > 0 ? '+' : '') + s.median_1y.toFixed(2) + '%';
+  $('t1-medd').textContent = s.median_dd.toFixed(2) + '%';
+  $('t1-pos').textContent = positives;
+
+  const n = STATS.ndx;
+  if (n && n.median_1y !== null) {
+    $('t4-med').textContent = (n.median_1y > 0 ? '+' : '') + n.median_1y.toFixed(2) + '%';
+  }
+
+  // Warsh forward scenarios
+  const t0 = STATS.warsh.spx_t0;
+  $('t5-t0').textContent   = fmtPriceRaw(t0);
+  $('t5-bull').textContent = fmtPriceRaw(t0 * (1 + s.p75_1y/100)) + ' (' + (s.p75_1y>0?'+':'') + s.p75_1y.toFixed(1) + '%)';
+  $('t5-base').textContent = fmtPriceRaw(t0 * (1 + s.median_1y/100)) + ' (' + (s.median_1y>0?'+':'') + s.median_1y.toFixed(1) + '%)';
+  $('t5-bear').textContent = fmtPriceRaw(STATS.warsh.spx_dd_median_low) + ' (' + s.median_dd.toFixed(1) + '%)';
+
+  // Buy zone: -10% from current (median DD level)
+  $('t5-buy-zone').textContent = fmtPriceRaw(STATS.warsh.spx_dd_median_low) + ' (DD-中位數)';
+})();
+
+// ====== INITIAL RENDER ======
+renderTable();
+buildChart();
+updateChartMeta();
+</script>
+</body>
+</html>
